@@ -91,13 +91,27 @@ double calculateDistance(const Point &a, const Point &b)
 vector<Edge> generateGraph(int n, int dimension)
 {
     vector<Edge> edges;
-    vector<Point> points = generatePoints(n, dimension);
-    for (int i = 0; i < n; ++i)
+    if (dimension > 0)
     {
-        for (int j = i + 1; j < n; ++j)
+        vector<Point> points = generatePoints(n, dimension);
+        for (int i = 0; i < n; ++i)
         {
-            double weight = calculateDistance(points[i], points[j]);
-            edges.emplace_back(i, j, weight);
+            for (int j = i + 1; j < n; ++j)
+            {
+                double weight = calculateDistance(points[i], points[j]);
+                edges.emplace_back(i, j, weight);
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            for (int j = i + 1; j < n; ++j)
+            {
+                double weight = static_cast<double>(rand()) / RAND_MAX; // Random weight
+                edges.emplace_back(i, j, weight);
+            }
         }
     }
     return edges;
