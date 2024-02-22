@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
     }
 
     double averageWeight = totalWeight / numtrials;
-    cout << "Average weight: " << averageWeight << " for numpoints: " << numpoints << " over " << numtrials << " trials in " << dimension << " dimensions." << endl;
+    cout << averageWeight << " " << numpoints << " " << numtrials << " " << dimension << endl;
 
     return 0;
 }

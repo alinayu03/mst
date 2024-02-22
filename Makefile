@@ -1,4 +1,3 @@
-# Compiler settings - Can change to clang++ if preferred
 CXX = g++
 CXXFLAGS = -Wall -g
 
