@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath> 
 #include <ctime> 
+#include <assert.h>
 
 using namespace std;
 
@@ -93,13 +94,26 @@ vector<Edge> generateGraph(int n, int dimension)
     vector<Edge> edges;
     if (dimension > 0)
     {
+        double edgeMax = -.1 * (log2(n) - 1.4) + 1.5;
+        if (dimension > 2)
+        {
+            edgeMax += 0.2;
+        }
+        if (((log2(n)) > 10) && (dimension == 2))
+        {
+            edgeMax = 0.15;
+        }
         vector<Point> points = generatePoints(n, dimension);
         for (int i = 0; i < n; ++i)
         {
             for (int j = i + 1; j < n; ++j)
             {
                 double weight = calculateDistance(points[i], points[j]);
-                edges.emplace_back(i, j, weight);
+                if (weight < edgeMax)
+                {
+                    edges.emplace_back(i, j, weight);
+                }
+                
             }
         }
     }
@@ -122,14 +136,17 @@ double kruskalsMST(int n, vector<Edge> &edges)
     sort(edges.begin(), edges.end(), compareEdge);
     UnionFind uf(n);
     double totalWeight = 0;
+    int numedges = 0;
     for (Edge &e : edges)
     {
         if (uf.find(e.u) != uf.find(e.v))
         {
             uf.unite(e.u, e.v);
+            numedges++;
             totalWeight += e.weight;
         }
     }
+    assert(numedges == (n - 1));
     return totalWeight;
 }
 
