@@ -5,6 +5,7 @@
 #include <cmath> 
 #include <ctime> 
 #include <assert.h>
+#include <random>
 
 using namespace std;
 
@@ -63,15 +64,17 @@ public:
     }
 };
 
-vector<Point> generatePoints(int n, int dimension)
+vector<Point> generatePoints(int n, int dimension, std::mt19937 &gen)
 {
     vector<Point> points;
+    std::uniform_real_distribution<> dis(0.0, 1.0); // Distribution from 0 to 1
+
     for (int i = 0; i < n; ++i)
     {
         vector<double> coordinates(dimension);
         for (int d = 0; d < dimension; ++d)
         {
-            coordinates[d] = static_cast<double>(rand()) / RAND_MAX;
+            coordinates[d] = dis(gen); // Use the distribution and generator here
         }
         points.emplace_back(coordinates);
     }
@@ -89,41 +92,27 @@ double calculateDistance(const Point &a, const Point &b)
     return sqrt(sum);
 }
 
-vector<Edge> generateGraph(int n, int dimension)
+vector<Edge> generateGraph(int n, int dimension, std::mt19937 &gen)
 {
     vector<Edge> edges;
-    if (dimension > 0)
+    std::uniform_real_distribution<> dis(0.0, 1.0); // For zero dimension
+    double edgeMax = -.1 * (log2(n) - 1.4) + 1.5;
+    if (dimension > 2)
     {
-        double edgeMax = -.1 * (log2(n) - 1.4) + 1.5;
-        if (dimension > 2)
-        {
-            edgeMax += 0.2;
-        }
-        if (((log2(n)) > 10) && (dimension == 2))
-        {
-            edgeMax = 0.15;
-        }
-        vector<Point> points = generatePoints(n, dimension);
-        for (int i = 0; i < n; ++i)
-        {
-            for (int j = i + 1; j < n; ++j)
-            {
-                double weight = calculateDistance(points[i], points[j]);
-                if (weight < edgeMax)
-                {
-                    edges.emplace_back(i, j, weight);
-                }
-                
-            }
-        }
+        edgeMax += 0.2;
     }
-    else
+    if (((log2(n)) > 10) && (dimension == 2))
     {
-        for (int i = 0; i < n; ++i)
+        edgeMax = 0.15;
+    }
+    vector<Point> points = generatePoints(n, dimension, gen);
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = i + 1; j < n; ++j)
         {
-            for (int j = i + 1; j < n; ++j)
+            double weight = dimension == 0 ? dis(gen) : calculateDistance(points[i], points[j]);
+            if (dimension == 0 || weight < edgeMax)
             {
-                double weight = static_cast<double>(rand()) / RAND_MAX; // Random weight
                 edges.emplace_back(i, j, weight);
             }
         }
@@ -163,12 +152,17 @@ int main(int argc, char *argv[])
     int numpoints = atoi(argv[2]);
     int numtrials = atoi(argv[3]);
     int dimension = atoi(argv[4]);
+    std::random_device rd;
+    std::mt19937 gen(rd());
 
     double totalWeight = 0;
     for (int trial = 0; trial < numtrials; ++trial)
     {
-        vector<Edge> edges = generateGraph(numpoints, dimension);
-        totalWeight += kruskalsMST(numpoints, edges);
+        vector<Point> points = generatePoints(numpoints, dimension, gen); // Generate points
+        vector<Edge> edges = generateGraph(numpoints, dimension, gen);    // Generate edges based on points
+
+        double trialWeight = kruskalsMST(numpoints, edges); // Calculate MST weight for this trial
+        totalWeight += trialWeight;                         // Add the trial's MST weight to the total sum
     }
 
     double averageWeight = totalWeight / numtrials;
