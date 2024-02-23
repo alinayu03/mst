@@ -96,10 +96,14 @@ vector<Edge> generateGraph(int n, int dimension, std::mt19937 &gen)
 {
     vector<Edge> edges;
     std::uniform_real_distribution<> dis(0.0, 1.0); // For zero dimension
-    double edgeMax = -.1 * (log2(n) - 1.4) + 1.5;
-    if (dimension > 2)
+    double edgeMax = 0;
+    if (dimension == 0)
     {
-        edgeMax += 0.2;
+        edgeMax = 1.5*(12.0 / n);
+    }
+    if (dimension > 1)
+    {
+        edgeMax = 1.5 * (1.8 / pow(n, (1.0 / dimension)));
     }
     if (((log2(n)) > 10) && (dimension == 2))
     {
@@ -111,7 +115,8 @@ vector<Edge> generateGraph(int n, int dimension, std::mt19937 &gen)
         for (int j = i + 1; j < n; ++j)
         {
             double weight = dimension == 0 ? dis(gen) : calculateDistance(points[i], points[j]);
-            if (dimension == 0 || weight < edgeMax)
+            //if (dimension == 0 || weight < edgeMax)
+            if (weight < edgeMax)
             {
                 edges.emplace_back(i, j, weight);
             }
